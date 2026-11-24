@@ -44,6 +44,7 @@ func (s *Server) hostTools() ([]actool.CoreTool, map[string][]string) {
 	tools := append(s.m.HostTools(), s.orchestrationTools()...)
 	tools = append(tools, s.findingRetestTools()...)
 	tools = append(tools, s.platformTools()...) // platform operation tools (create/edit skills/tools/MCP, for Auto)
+	tools = append(tools, s.ontologyTools()...) // auto-ontology semantic layer (bind per-agent via tools table)
 	custom, err := s.customTools()
 	if err != nil {
 		log.Printf("[custom-tool] load failed: %v", err)
@@ -549,6 +550,12 @@ func (s *Server) seedOrchestrationTools() {
 			bindings = json.RawMessage(`["worker","pentest"]`)
 		}
 		_ = s.m.PG().SeedTool(t.Name(), t.Description(), schema, bindings)
+	}
+	// auto-ontology semantic-layer tools: seeded unbound (opt-in) so workers only
+	// get them when an operator attaches them to an agent.
+	for _, t := range s.ontologyTools() {
+		schema, _ := json.Marshal(t.InputSchema())
+		_ = s.m.PG().SeedTool(t.Name(), t.Description(), schema, json.RawMessage(`[]`))
 	}
 	s.refreshBuiltinToolSchemas()
 	s.seedAutoDefaultBindings()

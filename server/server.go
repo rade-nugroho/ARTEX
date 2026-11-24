@@ -1014,6 +1014,13 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /api/llm/pool/reset", s.pgLLMPoolReset)
 	mux.HandleFunc("POST /api/llm/models", s.pgListModels)
 
+	// auto-ontology sidecar integration
+	mux.HandleFunc("/api/ontology/config", s.pgOntologyConfig)
+	mux.HandleFunc("GET /api/ontology/status", s.pgOntologyStatus)
+	mux.HandleFunc("GET /api/ontology/llm-env", s.pgOntologyLLMEnv)
+	mux.HandleFunc("POST /api/ontology/env-file", s.pgOntologyEnvFile)
+	mux.HandleFunc("/api/ontology/proxy/{path...}", s.ontologyProxy)
+
 	// interception rule management
 	mux.HandleFunc("GET /api/intercept/rules", s.interceptListRules)
 	mux.HandleFunc("POST /api/intercept/rules", s.interceptCreateRule)

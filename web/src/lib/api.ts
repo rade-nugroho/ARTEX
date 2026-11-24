@@ -115,7 +115,7 @@ import type {
 // Combined file data per attachment upload; matches maxChatUpload in server/chatupload.go.
 const MAX_CHAT_UPLOAD_BYTES = 512 * 1024 * 1024;
 
-function getToken(): string | null {
+export function getToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("artex_token");
 }
@@ -1197,6 +1197,21 @@ export const api = {
   deleteMcpServer: (id: number) => del<{ deleted: number }>(`/mcp/${id}`),
   mcpTools: (id: number) => get<{ tools: MCPTool[] }>(`/mcp/${id}/tools`).then((r) => arr(r.tools)),
   refreshMcpServer: (id: number) => post<{ tools: MCPTool[] }>(`/mcp/${id}/refresh`, {}).then((r) => arr(r.tools)),
+
+  // ---- auto-ontology sidecar ----
+  ontologyConfig: () =>
+    get<{ url: string; env_path: string; env_path_set: boolean; embed_model: string; reachable: boolean }>(
+      "/ontology/config",
+    ),
+  ontologySaveConfig: (cfg: { url?: string; env_path?: string; embed_model?: string }) =>
+    put<{ ok: boolean }>("/ontology/config", cfg),
+  ontologyStatus: () =>
+    get<Record<string, unknown>>("/ontology/status"),
+  ontologyLLMEnv: (profileId?: number) =>
+    get<{ env: string; source: string }>(`/ontology/llm-env${profileId ? `?profile_id=${profileId}` : ""}`),
+  ontologyWriteEnvFile: (path?: string) =>
+    post<{ written: string; source: string }>("/ontology/env-file", path ? { path } : {}),
+  ontologyProxy: (path: string, init?: RequestInit) => http<unknown>(`/ontology/proxy/${path}`, init),
 
   // ---- asset sync (ScopeSentry data source) ----
   ssStatus: () =>
