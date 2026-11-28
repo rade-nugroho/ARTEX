@@ -190,7 +190,12 @@ function InterceptPendingBadge() {
 function NavLinkItem({ item, isActive, showIconFallback }: NavLinkItemProps) {
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild aria-disabled={item.disabled} tooltip={item.title} isActive={isActive}>
+      <SidebarMenuButton
+        asChild
+        aria-disabled={item.disabled}
+        tooltip={navTooltip(item.title, item.description)}
+        isActive={isActive}
+      >
         <Link
           prefetch={false}
           href={item.url}
@@ -204,6 +209,23 @@ function NavLinkItem({ item, isActive, showIconFallback }: NavLinkItemProps) {
       {item.id === "approvals" ? <InterceptPendingBadge /> : <NavItemBadge badge={item.badge} />}
     </SidebarMenuItem>
   );
+}
+
+// Builds the tooltip config for a sidebar button. When a description is set, show the title + description on hover
+// in both expanded and collapsed state (hidden: false overrides the shadcn default, which shows the tooltip only when collapsed).
+function navTooltip(title: string, description?: string) {
+  if (!description) return title;
+  return {
+    hidden: false,
+    sideOffset: 8,
+    className: "max-w-xs",
+    children: (
+      <div className="flex flex-col gap-1">
+        <span className="font-medium">{title}</span>
+        <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+      </div>
+    ),
+  };
 }
 
 function NavLinkIcon({ item, showFallback }: NavLinkIconProps) {
